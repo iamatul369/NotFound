@@ -66,7 +66,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Not Found !!</h1>
+        <h1>Not Found</h1>
         <div class="hammer-container">
             <svg class="hammer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                 <!-- Hammer Handle -->
@@ -82,5 +82,65 @@
             </svg>
         </div>
     </div>
+    
+    <!-- Audio elements (hidden and muted initially) -->
+    <audio id="hammerSound" preload="auto" loop muted>
+        <source src="https://freesound.org/data/previews/156/156031_2538033-lq.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="sawSound" preload="auto" muted>
+        <source src="https://freesound.org/data/previews/316/316641_5123461-lq.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hammerSound = document.getElementById('hammerSound');
+            const sawSound = document.getElementById('sawSound');
+            
+            // Initialize sounds
+            hammerSound.volume = 0.3;
+            sawSound.volume = 0.2;
+            
+            // Function to attempt auto-play
+            function attemptPlaySounds() {
+                // Try to unmute and play hammer sound
+                hammerSound.muted = false;
+                let playPromise = hammerSound.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        console.log("Autoplay started");
+                        
+                        // Set up saw sound to play occasionally
+                        setInterval(() => {
+                            if (Math.random() > 0.7) {
+                                sawSound.muted = false;
+                                sawSound.currentTime = 0;
+                                sawSound.play().catch(e => console.log("Couldn't play saw sound:", e));
+                            }
+                        }, 2000);
+                        
+                    }).catch(error => {
+                        console.log("Autoplay prevented:", error);
+                        // If autoplay is prevented, we'll add event listener for user interaction
+                        document.addEventListener('click', function userInitiatedPlay() {
+                            hammerSound.play();
+                            document.removeEventListener('click', userInitiatedPlay);
+                        });
+                    });
+                }
+            }
+            
+            // Try to play sounds
+            attemptPlaySounds();
+            
+            // Synchronize hammer sound with animation
+            hammerSound.addEventListener('timeupdate', function() {
+                if (hammerSound.currentTime > 0.8) {
+                    hammerSound.currentTime = 0;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
